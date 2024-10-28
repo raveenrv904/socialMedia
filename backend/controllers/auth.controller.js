@@ -46,11 +46,78 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  res.send("Login User");
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      throw new Error("Required Email, and Password");
+    }
+
+    const user = await User.findOne({ email });
+
+    const comparePassword = bcrypt.compare(password, user.password);
+
+    if (!comparePassword) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Invalid Credentials" });
+    }
+
+    generateTokenAndSetCookies(res, user._id);
+
+    res.status(201).json({
+      success: true,
+      message: "LoggedIn Successfully",
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 const getUserProfile = async (req, res) => {
-  res.send("User Profile");
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res
+        .status(500)
+        .json({ success: false, message: "Profile Id Does not exists" });
+    }
+
+    const profileUser = await User.findOne({ _id: id });
+    if (!profileUser) {
+      return res.status(500).json({
+        success: false,
+        message: "Profile with provided userId does not exists",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User",
+      user: { ...profileUser._doc, password: undefined },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({});
+
+    res.status(201).json({
+      success: true,
+      users,
+      count: users.length,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 const logout = async (req, res) => {
@@ -62,4 +129,5 @@ module.exports = {
   login,
   logout,
   getUserProfile,
+  getAllUsers,
 };
