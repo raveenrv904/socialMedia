@@ -6,13 +6,14 @@ const {
   getUserProfile,
   getAllUsers,
 } = require("../controllers/auth.controller");
+const verifyToken = require("../middleware/verifyToken");
 
 const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
 router.get("/getAllUsers", getAllUsers);
-router.get("/profile/:id", getUserProfile);
-router.post("/logout", logout);
+router.get("/profile", verifyToken, getUserProfile);
+router.get("/logout", logout);
 
 module.exports = router;

@@ -80,15 +80,8 @@ const login = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!id) {
-      return res
-        .status(500)
-        .json({ success: false, message: "Profile Id Does not exists" });
-    }
-
-    const profileUser = await User.findOne({ _id: id });
+    const { userId } = req;
+    const profileUser = await User.findOne({ _id: userId });
     if (!profileUser) {
       return res.status(500).json({
         success: false,
@@ -121,7 +114,8 @@ const getAllUsers = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  res.send("Logout user");
+  res.clearCookie("token");
+  res.status(200).json({ success: true, message: "Logged out Successfully" });
 };
 
 module.exports = {
